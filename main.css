@@ -1,0 +1,41 @@
+a{
+    color:black;
+    text-decoration:none;
+}
+a:hover{
+    background-color:rgba(0, 157, 230, 0.336);
+    color:white;
+
+}
+h1 {
+    text-align: center;
+}
+
+#txt {
+    text-align: center; 
+    margin-bottom: 50px;
+}
+
+
+
+.card {
+    text-align: center;
+    padding:30px;
+   
+}
+
+.card_title {
+    font-size: 20px;
+}
+
+.card_button {
+    font-size: 20px;
+    width: 150px;
+    height: 30px;
+}
+
+.card_img {
+    width: 100px;
+    height: auto;
+    padding:10px;
+}
