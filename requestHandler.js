@@ -45,7 +45,8 @@ function blueRacket(response) {
     });
 }
 
-// 새로운 blackRacket 함수 추가
+// 새로운 blackRacket 함수 추
+//가
 function blackRacket(response) {
     fs.readFile('./img/blackRacket.png', function(err, data) {
         if (err) {
