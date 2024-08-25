@@ -63,27 +63,26 @@ function blackRacket(response) {
 function order(response, productId) {
     response.writeHead(200, { 'Content-Type': 'text/html' });
 
-    // 현재 날짜를 'YYYY-MM-DD' 형식으로 변환
-    const orderDate = new Date().toISOString().split('T')[0];
+    // toLocaleDateString()을 사용하여 날짜를 'YYYY-MM-DD' 형식으로 변환
+    const orderDate = new Date().toLocaleDateString('en-CA'); // 'en-CA' 로케일은 'YYYY-MM-DD' 형식을 반환
 
-    // 쿼리 실행: product_id와 order_date를 orderlist에 삽입
-    mariadb.query(
-        "INSERT INTO orderlist (product_id, order_date) VALUES (?, ?)",
-        [productId, orderDate],
-        function (err, rows) {
-            if (err) {
-                console.error("Error inserting into orderlist: ", err);
-                response.write('Error occurred while placing order.');
-            } else {
-                console.log('Order placed successfully:', rows);
-                response.write('Order placed successfully.');
-            }
-            response.end();
+    // 올바른 SQL 구문으로 수정
+    const query = "INSERT INTO orderlist (product_id, order_date) VALUES (?, ?)";
+    
+    // 쿼리 실행
+    mariadb.query(query, [productId, orderDate], function (err, rows) {
+        if (err) {
+            console.error("Error inserting into orderlist: ", err);
+            response.write('Error occurred while placing order.');
+        } else {
+            console.log('Order placed successfully:', rows);
+            response.write('Order placed successfully.');
         }
-    );
+        response.end();
+    });
 }
 
-function orderlist(response){
+function orderlist(response) {
     console.log('orderlist');
     response.writeHead(200, {'Content-Type': 'text/html'});
     
@@ -101,9 +100,17 @@ function orderlist(response){
 
             // 테이블 행 추가
             rows.forEach(element => {
+                // MySQL의 날짜 문자열을 JavaScript Date 객체로 변환
+                const date = new Date(element.order_date);
+
+                // Date 객체를 'YYYY-MM-DD' 형식으로 변환
+                const formattedDate = date.getFullYear() + '-' + 
+                                      ('0' + (date.getMonth() + 1)).slice(-2) + '-' + 
+                                      ('0' + date.getDate()).slice(-2);
+
                 response.write("<tr>"
                     + "<td>" + element.product_id + "</td>"
-                    + "<td>" + element.order_date + "</td>"
+                    + "<td>" + formattedDate + "</td>"
                     + "</tr>"
                 );
             });
