@@ -1,5 +1,6 @@
 const fs = require('fs');
 const main_view = fs.readFileSync('./main.html', 'utf-8');
+const orderlist_view = fs.readFileSync('./orderlist.html','utf-8');
 
 const mariadb = require('./database/connect/mariadb');
 
@@ -61,24 +62,67 @@ function blackRacket(response) {
 }
 function order(response, productId) {
     response.writeHead(200, { 'Content-Type': 'text/html' });
-    const orderDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식의 현재 날짜
-    mariadb.query("INSERT INTO orderlist (product_id, order_date) VALUES (?, ?)", [productId, orderDate], function(err, rows) {
-        if (err) {
-            console.error("Error inserting into orderlist: ", err); // 오류 발생 시 로그 출력
-            response.write('Error occurred while placing order.');
-        } else {
-            console.log('Order placed successfully:', rows);
-            response.write('Order placed successfully.');
+
+    // 현재 날짜를 'YYYY-MM-DD' 형식으로 변환
+    const orderDate = new Date().toISOString().split('T')[0];
+
+    // 쿼리 실행: product_id와 order_date를 orderlist에 삽입
+    mariadb.query(
+        "INSERT INTO orderlist (product_id, order_date) VALUES (?, ?)",
+        [productId, orderDate],
+        function (err, rows) {
+            if (err) {
+                console.error("Error inserting into orderlist: ", err);
+                response.write('Error occurred while placing order.');
+            } else {
+                console.log('Order placed successfully:', rows);
+                response.write('Order placed successfully.');
+            }
+            response.end();
         }
-        response.end();
+    );
+}
+
+function orderlist(response){
+    console.log('orderlist');
+    response.writeHead(200, {'Content-Type': 'text/html'});
+    
+    // 데이터베이스에서 orderlist 조회
+    mariadb.query('SELECT * FROM orderlist', function(err, rows) {
+        if (err) {
+            console.error("Error fetching orderlist: ", err);
+            response.write('Error fetching order list.');
+            response.end();
+        } else {
+            response.write(orderlist_view); // 기본 HTML 출력
+
+            // 테이블 시작 태그
+            response.write('<table border="1"><tr><th>Product ID</th><th>Order Date</th></tr>');
+
+            // 테이블 행 추가
+            rows.forEach(element => {
+                response.write("<tr>"
+                    + "<td>" + element.product_id + "</td>"
+                    + "<td>" + element.order_date + "</td>"
+                    + "</tr>"
+                );
+            });
+
+            // 테이블 닫기 태그
+            response.write("</table>");
+            response.end();
+        }
     });
 }
+
 
 let handle = {};
 
 // 경로와 처리 함수의 매핑
 handle['/'] = main;
 handle['/order'] = order;
+handle['/orderlist'] = orderlist;
+//이미지 디렉터리
 handle['/img/redRacket.png'] = redRacket;
 handle['/img/blueRacket.png'] = blueRacket;  // blueRacket 함수 정의 후 오류 수정됨
 handle['/img/blackRacket.png'] = blackRacket; // blackRacket 함수 정의 후 오류 수정됨
