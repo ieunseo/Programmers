@@ -59,14 +59,21 @@ function blackRacket(response) {
         }
     });
 }
-function order(response,productId){
+function order(response, productId) {
     response.writeHead(200, { 'Content-Type': 'text/html' });
-    mariadb.query("INSERT INTO orderlist VALUES (" + productId + ",'"+ new Date().toLocaleDateString +"');",function(err, rows) {
-        console.log(rows);
+    const orderDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식의 현재 날짜
+    mariadb.query("INSERT INTO orderlist (product_id, order_date) VALUES (?, ?)", [productId, orderDate], function(err, rows) {
+        if (err) {
+            console.error("Error inserting into orderlist: ", err); // 오류 발생 시 로그 출력
+            response.write('Error occurred while placing order.');
+        } else {
+            console.log('Order placed successfully:', rows);
+            response.write('Order placed successfully.');
+        }
+        response.end();
     });
-    response.write('orderpagez22');
-    response.end();
 }
+
 let handle = {};
 
 // 경로와 처리 함수의 매핑
